@@ -91,7 +91,7 @@ Module.register("MMM-LaunchLibrary", {
     wrapper.className += "small";
     if (self.launches !== null) {
       var launch = self.launches[self.launchIndex];
-      wrapper.innerHTML = sprintf("{} - <div style='display: inline-block;'>{}</div>", launch.name, teaTime(launch.wsstamp * 1000));
+      wrapper.innerHTML = sprintf("{}: <div style='display: inline-block;'>{}</div>", launch.name, teaTime(launch.wsstamp * 1000));
     }
 
     return wrapper;
