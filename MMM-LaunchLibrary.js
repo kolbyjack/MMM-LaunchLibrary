@@ -31,8 +31,8 @@ function teaTime(timestamp) {
 Module.register("MMM-LaunchLibrary", {
   // Default module config
   defaults: {
-    updateInterval: 60 * 60 * 1000,
-    rotateInterval: 5 * 60 * 1000,
+    updateInterval: 60 * 60,
+    rotateInterval: 60,
     maximumEntries: 1,
     locations: [16, 17],
   },
@@ -46,7 +46,7 @@ Module.register("MMM-LaunchLibrary", {
     self.lastRotation = self.lastUpdate;
 
     self.getData();
-    setInterval(function() { self.getData(); }, self.config.updateInterval);
+    setInterval(function() { self.getData(); }, self.config.updateInterval * 1000);
   },
 
   socketNotificationReceived: function(notification, payload) {
@@ -66,7 +66,7 @@ Module.register("MMM-LaunchLibrary", {
           if (now !== self.lastUpdate) {
             self.lastUpdate = now;
 
-            if (now - self.lastRotation >= self.config.rotateInterval * 0.001) {
+            if (now - self.lastRotation >= self.config.rotateInterval) {
               self.launchIndex = (self.launchIndex + 1) % self.launches.length;
               self.lastRotation = now;
             }
