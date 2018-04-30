@@ -20,9 +20,15 @@ module.exports = NodeHelper.create({
 
   fetchData: function(config) {
     var self = this;
+    var url = "https://launchlibrary.net/1.4.1/launch?next=60&mode=verbose";
+    var locations = config.locations || [];
+
+    if (locations.length > 0) {
+      url += "&padLocation=" + locations.join(",");
+    }
 
     request({
-      url: "https://launchlibrary.net/1.4/launch?next=60&mode=verbose",
+      url: url,
       method: "GET",
       headers: { "cache-control": "no-cache" },
     },
@@ -34,8 +40,7 @@ module.exports = NodeHelper.create({
 
       if (response.statusCode === 200) {
         var result = JSON.parse(body);
-        var locations = config.locations || [];
-        result.launches = result.launches.filter(l => l.wsstamp !== 0 && (locations.length === 0 || locations.includes(l.location.id)));
+        result.launches = result.launches.filter(l => l.wsstamp !== 0);
         self.sendSocketNotification("LAUNCHLIBRARY_RESULTS", result);
       }
     });
