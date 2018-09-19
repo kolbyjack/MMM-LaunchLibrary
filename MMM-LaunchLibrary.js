@@ -1,5 +1,7 @@
 // MMM-LaunchLibrary.js
 
+"use strict";
+
 function sprintf(fmt) {
   var parts = fmt.split("{}");
   var message = parts[0];
@@ -35,45 +37,40 @@ Module.register("MMM-LaunchLibrary", {
     rotateInterval: 60,
     maximumEntries: 1,
     locations: [16, 17],
+    useLocalFeed: false,
   },
 
   start: function() {
     var self = this;
 
-    self.launches = null;
+    self.launches = [];
     self.launchIndex = 0;
     self.lastUpdate = (new Date().getTime() * 0.001) | 0;
-    self.lastRotation = self.lastUpdate;
+    self.lastRotation = 0;
 
     self.getData();
     setInterval(function() { self.getData(); }, self.config.updateInterval * 1000);
+    setInterval(function() { self.tick(); }, 250);
+  },
+
+  notificationReceived: function(notification, payload, sender) {
+    // Do nothing
   },
 
   socketNotificationReceived: function(notification, payload) {
     var self = this;
-    var initialUpdate = (self.launches === null);
 
     if (notification === "LAUNCHLIBRARY_RESULTS") {
+      var oldLaunchCount = self.launches.length;
+
       self.launches = payload.launches.slice(0, self.config.maximumEntries);
-      self.launchIndex = self.launchIndex % self.launches.length;
+      self.launchIndex = self.launchIndex % (self.launches.length || 1);
 
-      if (initialUpdate) {
-        self.updateDom();
-
-        setInterval(function() {
-          var now = (new Date().getTime() * 0.001) | 0;
-
-          if (now !== self.lastUpdate) {
-            self.lastUpdate = now;
-
-            if (now - self.lastRotation >= self.config.rotateInterval) {
-              self.launchIndex = (self.launchIndex + 1) % self.launches.length;
-              self.lastRotation = now;
-            }
-
-            self.updateDom();
-          }
-        }, 250);
+      if ((oldLaunchCount === 0) !== (self.launches.length === 0)) {
+        self.updateContent();
+        if (self.launches.length === 0 && self.config.useLocalFeed) {
+          self.sendNotification("LOCALFEED_REMOVE_ITEM", { id: "nextLaunch" });
+        }
       }
     }
   },
@@ -89,11 +86,45 @@ Module.register("MMM-LaunchLibrary", {
     var wrapper = document.createElement("div");
 
     wrapper.className += "small";
-    if (self.launches !== null) {
-      var launch = self.launches[self.launchIndex];
-      wrapper.innerHTML = sprintf("{}: <div style='display: inline-block;'>{}</div>", launch.name, teaTime(launch.wsstamp * 1000));
-    }
+    wrapper.innerHTML = self.getContent();
 
     return wrapper;
+  },
+
+  getContent: function() {
+    var self = this;
+
+    if (self.launches.length > 0) {
+      var launch = self.launches[self.launchIndex];
+      return sprintf("{}: <div style='display: inline-block;'>{}</div>", launch.name, teaTime(launch.wsstamp * 1000));
+    } else {
+      return "";
+    }
+  },
+
+  updateContent: function() {
+    var self = this;
+
+    if (self.config.useLocalFeed) {
+      self.sendNotification("LOCALFEED_ADD_ITEM", { id: "nextLaunch", message: self.getContent(), duration: 3 });
+    } else {
+      self.updateDom();
+    }
+  },
+
+  tick: function() {
+    var self = this;
+    var now = (new Date().getTime() * 0.001) | 0;
+
+    if (now !== self.lastUpdate) {
+      self.lastUpdate = now;
+
+      if (now - self.lastRotation >= self.config.rotateInterval) {
+        self.launchIndex = (self.launchIndex + 1) % (self.launches.length || 1);
+        self.lastRotation = now;
+      }
+
+      self.updateContent();
+    }
   }
 });
