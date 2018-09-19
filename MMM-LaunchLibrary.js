@@ -106,7 +106,7 @@ Module.register("MMM-LaunchLibrary", {
     var self = this;
 
     if (self.config.useLocalFeed) {
-      self.sendNotification("LOCALFEED_ADD_ITEM", { id: "nextLaunch", message: self.getContent(), duration: 3 });
+      self.sendNotification("LOCALFEED_ADD_ITEM", { id: "nextLaunch", html: self.getContent(), duration: 3 });
     } else {
       self.updateDom();
     }
