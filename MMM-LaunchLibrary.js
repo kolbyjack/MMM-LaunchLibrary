@@ -68,9 +68,6 @@ Module.register("MMM-LaunchLibrary", {
 
       if ((oldLaunchCount === 0) !== (self.launches.length === 0)) {
         self.updateContent();
-        if (self.launches.length === 0 && self.config.useLocalFeed) {
-          self.sendNotification("LOCALFEED_REMOVE_ITEM", { id: "nextLaunch" });
-        }
       }
     }
   },
@@ -107,8 +104,14 @@ Module.register("MMM-LaunchLibrary", {
 
     if (self.config.useLocalFeed) {
       var html = self.getContent();
-      if (html.length > 0) {
-        self.sendNotification("LOCALFEED_ADD_ITEM", { id: "nextLaunch", html: html, duration: 3 });
+
+      if (html !== self.lastContent) {
+        self.lastContent = html;
+        if (html.length > 0) {
+          self.sendNotification("LOCALFEED_ADD_ITEM", { id: "nextLaunch", html: html, duration: 3 });
+        } else {
+          self.sendNotification("LOCALFEED_REMOVE_ITEM", { id: "nextLaunch" });
+        }
       }
     } else {
       self.updateDom();
