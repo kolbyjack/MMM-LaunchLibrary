@@ -45,12 +45,11 @@ Module.register("MMM-LaunchLibrary", {
 
     self.launches = [];
     self.launchIndex = 0;
-    self.lastUpdate = (new Date().getTime() * 0.001) | 0;
     self.lastRotation = 0;
 
     self.getData();
     setInterval(function() { self.getData(); }, self.config.updateInterval * 1000);
-    setInterval(function() { self.tick(); }, 250);
+    setInterval(function() { self.tick(); }, 1000);
   },
 
   notificationReceived: function(notification, payload, sender) {
@@ -122,15 +121,11 @@ Module.register("MMM-LaunchLibrary", {
     var self = this;
     var now = (new Date().getTime() * 0.001) | 0;
 
-    if (now !== self.lastUpdate) {
-      self.lastUpdate = now;
-
-      if (now - self.lastRotation >= self.config.rotateInterval) {
-        self.launchIndex = (self.launchIndex + 1) % (self.launches.length || 1);
-        self.lastRotation = now;
-      }
-
-      self.updateContent();
+    if (now - self.lastRotation >= self.config.rotateInterval) {
+      self.launchIndex = (self.launchIndex + 1) % (self.launches.length || 1);
+      self.lastRotation = now;
     }
+
+    self.updateContent();
   }
 });
