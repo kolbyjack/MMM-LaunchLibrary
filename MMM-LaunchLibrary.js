@@ -2,31 +2,23 @@
 
 "use strict";
 
-function sprintf(fmt) {
-  var parts = fmt.split("{}");
-  var message = parts[0];
-  var i;
-
-  for (i = 1; i < parts.length; ++i) {
-    message += arguments[i] + parts[i];
-  }
-
-  return message;
+function teaSign(delta) {
+  return (delta > 0) ? "-" : "+";
 }
 
 function teaTime(timestamp) {
   function z(n) { return ((n < 10) ? "0" : "") + n; }
-  var now = new Date().getTime();
-  var delta = (Math.abs(timestamp - now) * 0.001) | 0;
+  var now = (new Date().getTime() * 0.001) | 0;
+  var delta = Math.abs(timestamp - now);
   var days = (delta / 86400) | 0;
   var hours = z(((delta % 86400) / 3600) | 0);
   var minutes = z(((delta % 3600) / 60) | 0);
   var seconds = z(delta % 60);
 
   if (days > 0) {
-    return sprintf("T {} {}D {}:{}:{}", (timestamp > now) ? "-" : "+", days, hours, minutes, seconds);
+    return `T ${teaSign(timestamp - now)} ${days}D ${hours}:${minutes}:${seconds}`;
   } else {
-    return sprintf("T {} {}:{}:{}", (timestamp > now) ? "-" : "+", hours, minutes, seconds);
+    return `T ${teaSign(timestamp - now)} ${hours}:${minutes}:${seconds}`;
   }
 }
 
@@ -92,7 +84,7 @@ Module.register("MMM-LaunchLibrary", {
 
     if (self.launches.length > 0) {
       var launch = self.launches[self.launchIndex];
-      return sprintf("{}: <div style='display: inline-block;'>{}</div>", launch.name, teaTime(launch.wsstamp * 1000));
+      return `${launch.name}: <div style='display: inline-block;'>${teaTime(launch.wsstamp)}</div>`;
     } else {
       return "";
     }
