@@ -28,7 +28,7 @@ Module.register("MMM-LaunchLibrary", {
     updateInterval: 60 * 60,
     rotateInterval: 60,
     maximumEntries: 1,
-    locations: [16, 17],
+    locations: [12],
     useLocalFeed: false,
   },
 
@@ -54,7 +54,7 @@ Module.register("MMM-LaunchLibrary", {
     if (notification === "LAUNCHLIBRARY_RESULTS") {
       var oldLaunchCount = self.launches.length;
 
-      self.launches = payload.launches.slice(0, self.config.maximumEntries);
+      self.launches = payload.slice(0, self.config.maximumEntries);
       self.launchIndex = self.launchIndex % (self.launches.length || 1);
 
       if ((oldLaunchCount === 0) !== (self.launches.length === 0)) {

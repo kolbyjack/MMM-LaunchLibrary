@@ -20,11 +20,11 @@ module.exports = NodeHelper.create({
 
   fetchData: function(config) {
     var self = this;
-    var url = "https://launchlibrary.net/1.4.1/launch?next=60&mode=verbose";
+    var url = "https://ll.thespacedevs.com/2.0.0/launch/?limit=10&mode=list&status=1";
     var locations = config.locations || [];
 
     if (locations.length > 0) {
-      url += "&padLocation=" + locations.join(",");
+      url += `&location__ids=${locations.join(",")}`;
     }
 
     request({
@@ -39,8 +39,10 @@ module.exports = NodeHelper.create({
       }
 
       if (response.statusCode === 200) {
-        var result = JSON.parse(body);
-        result.launches = result.launches.filter(l => l.wsstamp !== 0);
+        var launches = JSON.parse(body).results;
+        var result = launches.
+            map(l => { return { name: l.name, wsstamp: Date.parse(l.window_start) / 1000 | 0 }; }).
+            filter(l => l.wsstamp > 0);
         self.sendSocketNotification("LAUNCHLIBRARY_RESULTS", result);
       }
     });
