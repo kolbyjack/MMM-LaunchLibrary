@@ -20,7 +20,7 @@ module.exports = NodeHelper.create({
 
   fetchData: function(config) {
     var self = this;
-    var url = "https://ll.thespacedevs.com/2.0.0/launch/?limit=10&mode=list&status=1";
+    var url = "https://ll.thespacedevs.com/2.0.0/launch/upcoming/?limit=10&mode=list&status=1";
     var locations = config.locations || [];
 
     if (locations.length > 0) {
