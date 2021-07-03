@@ -19,13 +19,18 @@ module.exports = NodeHelper.create({
   },
 
   request: function(options, callback) {
+    var error = undefined;
+    var response = undefined;
+    var body = "";
+
     const req = https.request(options.url, options, res => {
-      var error = null;
-      var body = "";
-      res.on("error", e => error = e);
+      response = res;
       res.on("data", chunk => body += chunk);
-      res.on("end", () => callback(error, res, body));
+      res.on("error", e => error = e);
     });
+
+    req.on("error", e => error = e);
+    req.on("close", () => callback(error, response, body));
 
     req.end(options.body);
   },
