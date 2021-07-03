@@ -1,7 +1,7 @@
 "use strict";
 
 const NodeHelper = require("node_helper");
-const request = require("request");
+const https = require("https");
 
 module.exports = NodeHelper.create({
   start: function() {
@@ -18,6 +18,18 @@ module.exports = NodeHelper.create({
     }
   },
 
+  request: function(options, callback) {
+    const req = https.request(options.url, options, res => {
+      var error = null;
+      var body = "";
+      res.on("error", e => error = e);
+      res.on("data", chunk => body += chunk);
+      res.on("end", () => callback(error, res, body));
+    });
+
+    req.end(options.body);
+  },
+
   fetchData: function(config) {
     var self = this;
     var url = "https://ll.thespacedevs.com/2.0.0/launch/upcoming/?limit=10&mode=list&status=1";
@@ -27,7 +39,7 @@ module.exports = NodeHelper.create({
       url += `&location__ids=${locations.join(",")}`;
     }
 
-    request({
+    self.request({
       url: url,
       method: "GET",
       headers: { "cache-control": "no-cache" },
