@@ -6,19 +6,19 @@ function teaSign(delta) {
   return (delta > 0) ? "-" : "+";
 }
 
-function teaTime(timestamp) {
+function teaTime(config, timestamp) {
   function z(n) { return ((n < 10) ? "0" : "") + n; }
   var now = (new Date().getTime() * 0.001) | 0;
   var delta = Math.abs(timestamp - now);
   var days = (delta / 86400) | 0;
   var hours = z(((delta % 86400) / 3600) | 0);
   var minutes = z(((delta % 3600) / 60) | 0);
-  var seconds = z(delta % 60);
+  var seconds = config.displaySeconds ? `:${z(delta % 60)}` : "";
 
   if (days > 0) {
-    return `T ${teaSign(timestamp - now)} ${days}D ${hours}:${minutes}:${seconds}`;
+    return `T ${teaSign(timestamp - now)} ${days}D ${hours}:${minutes}${seconds}`;
   } else {
-    return `T ${teaSign(timestamp - now)} ${hours}:${minutes}:${seconds}`;
+    return `T ${teaSign(timestamp - now)} ${hours}:${minutes}${seconds}`;
   }
 }
 
@@ -30,6 +30,7 @@ Module.register("MMM-LaunchLibrary", {
     maximumEntries: 1,
     locations: [12],
     useLocalFeed: false,
+    displaySeconds: true,
   },
 
   start: function() {
@@ -84,28 +85,28 @@ Module.register("MMM-LaunchLibrary", {
 
     if (self.launches.length > 0) {
       var launch = self.launches[self.launchIndex];
-      return `${launch.name}: <div style='display: inline-block;'>${teaTime(launch.wsstamp)}</div>`;
+      return `${launch.name}: <div style='display: inline-block;'>${teaTime(self.config, launch.wsstamp)}</div>`;
     } else {
       return "";
     }
   },
 
   updateContent: function() {
-    var self = this;
+    const self = this;
+    const html = self.getContent();
 
-    if (self.config.useLocalFeed) {
-      var html = self.getContent();
+    if (html !== self.lastContent) {
+      self.lastContent = html;
 
-      if (html !== self.lastContent) {
-        self.lastContent = html;
+      if (self.config.useLocalFeed) {
         if (html.length > 0) {
           self.sendNotification("LOCALFEED_ADD_ITEM", { id: "nextLaunch", html: html, duration: 3 });
         } else {
           self.sendNotification("LOCALFEED_REMOVE_ITEM", { id: "nextLaunch" });
         }
+      } else {
+        self.updateDom();
       }
-    } else {
-      self.updateDom();
     }
   },
 
