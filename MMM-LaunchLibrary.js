@@ -98,14 +98,12 @@ Module.register("MMM-LaunchLibrary", {
     if (html !== self.lastContent) {
       self.lastContent = html;
 
-      if (self.config.useLocalFeed) {
-        if (html.length > 0) {
-          self.sendNotification("LOCALFEED_ADD_ITEM", { id: "nextLaunch", html: html, duration: 3 });
-        } else {
-          self.sendNotification("LOCALFEED_REMOVE_ITEM", { id: "nextLaunch" });
-        }
-      } else {
+      if (!self.config.useLocalFeed) {
         self.updateDom();
+      } else if (html.length > 0) {
+        self.sendNotification("LOCALFEED_ADD_ITEM", { id: "nextLaunch", html: html, duration: 90 });
+      } else {
+        self.sendNotification("LOCALFEED_REMOVE_ITEM", { id: "nextLaunch" });
       }
     }
   },
