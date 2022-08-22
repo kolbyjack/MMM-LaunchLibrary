@@ -36,6 +36,7 @@ Module.register("MMM-LaunchLibrary", {
   start: function() {
     var self = this;
 
+    self.content = null;
     self.launches = [];
     self.launchIndex = 0;
     self.lastRotation = 0;
@@ -71,13 +72,15 @@ Module.register("MMM-LaunchLibrary", {
   },
 
   getDom: function() {
-    var self = this;
-    var wrapper = document.createElement("div");
+    const self = this;
 
-    wrapper.className += "small";
-    wrapper.innerHTML = self.getContent();
+    if (self.content === null) {
+      self.content = document.createElement("div");
+      self.content.className += "small";
+      self.content.innerHTML = self.getContent();
+    }
 
-    return wrapper;
+    return self.content;
   },
 
   getContent: function() {
@@ -99,7 +102,7 @@ Module.register("MMM-LaunchLibrary", {
       self.lastContent = html;
 
       if (!self.config.useLocalFeed) {
-        self.updateDom();
+        self.content.innerHTML = html;
       } else if (html.length > 0) {
         self.sendNotification("LOCALFEED_ADD_ITEM", { id: "nextLaunch", html: html, duration: 90 });
       } else {
