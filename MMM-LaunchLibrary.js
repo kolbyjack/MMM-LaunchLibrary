@@ -25,6 +25,7 @@ function teaTime(config, timestamp) {
 Module.register("MMM-LaunchLibrary", {
   // Default module config
   defaults: {
+    displayUpdateInterval: 1,
     updateInterval: 60 * 60,
     rotateInterval: 60,
     maximumEntries: 1,
@@ -43,7 +44,7 @@ Module.register("MMM-LaunchLibrary", {
 
     self.getData();
     setInterval(function() { self.getData(); }, self.config.updateInterval * 1000);
-    setInterval(function() { self.tick(); }, 1000);
+    setInterval(function() { self.tick(); }, self.config.displayUpdateInterval * 1000);
   },
 
   notificationReceived: function(notification, payload, sender) {
